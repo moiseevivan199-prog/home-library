@@ -1,0 +1,247 @@
+
+#include <iostream>  // Для ввода/вывода (cout, cin)
+#include <vector>    // Для использования динамического массива vector
+#include <string>    // Для работы со строками string
+#include <fstream>   // Для работы с файлами (чтение/запись)
+#include <algorithm> // Для вспомогательных алгоритмов (не используется напрямую)
+
+using namespace std; // Чтобы не писать std:: перед каждым стандартным элементом
+
+// Структура, описывающая одну книгу
+struct Book {
+    int id;          // Уникальный идентификатор книги
+    string title;    // Название книги
+    string author;   // Автор книги
+    int year;        // Год издания
+    string status;   // Статус: "в наличии" или "выдана"
+};
+
+// Класс, управляющий библиотекой
+class Library {
+private:
+    vector<Book> books;  // Вектор (динамический массив) для хранения всех книг
+    int nextId;          // Следующий свободный ID для новой книги
+    string filename;     // Имя файла для сохранения данных
+    
+public:
+    // Конструктор - вызывается при создании объекта библиотеки
+    Library() : nextId(1), filename("library.txt") {
+        loadFromFile();  // Загружаем сохранённые книги из файла (если есть)
+    }
+    
+    // 1. Добавление новой книги
+    void addBook() {
+        Book book;                   // Создаём временную книгу
+        book.id = nextId++;          // Присваиваем ID и увеличиваем счётчик
+        
+        cout << "Название: ";
+        cin.ignore();                // Очищаем буфер ввода от символа новой строки
+        getline(cin, book.title);    // Читаем всю строку (с пробелами)
+        
+        cout << "Автор: ";
+        getline(cin, book.author);   // Читаем автора
+        
+        cout << "Год: ";
+        cin >> book.year;            // Читаем год издания
+        
+        book.status = "в наличии";   // Новая книга всегда доступна
+        books.push_back(book);       // Добавляем книгу в вектор
+        saveToFile();                // Сохраняем изменения в файл
+        cout << "Книга добавлена. ID: " << book.id << endl;
+    }
+    
+    // 2. Удаление книги по ID
+    void removeBook(int id) {
+        // Проходим по всем книгам в векторе
+        for (size_t i = 0; i < books.size(); i++) {
+            if (books[i].id == id) {                     // Нашли книгу с нужным ID
+                books.erase(books.begin() + i);          // Удаляем элемент по индексу
+                saveToFile();                            // Сохраняем изменения
+                cout << "Книга удалена" << endl;
+                return;                                  // Выходим из функции
+            }
+        }
+        cout << "Книга не найдена" << endl;  // Если не нашли
+    }
+    
+    // 3. Поиск книг по названию или автору
+    void searchBooks(string query) {
+        // Перебираем все книги
+        for (auto& book : books) {
+            // Проверяем, содержится ли искомая строка в названии ИЛИ в авторе
+            if (book.title.find(query) != string::npos || 
+                book.author.find(query) != string::npos) {
+                printBook(book);  // Выводим найденную книгу
+            }
+        }
+    }
+    
+    // 4. Выдача книги читателю
+    void issueBook(int id) {
+        for (auto& book : books) {
+            if (book.id == id) {
+                book.status = "выдана";  // Меняем статус на "выдана"
+                saveToFile();            // Сохраняем изменения
+                cout << "Книга выдана" << endl;
+                return;
+            }
+        }
+        cout << "Книга не найдена" << endl;
+    }
+    
+    // 5. Возврат книги в библиотеку
+    void returnBook(int id) {
+        for (auto& book : books) {
+            if (book.id == id) {
+                book.status = "в наличии";  // Меняем статус обратно
+                saveToFile();               // Сохраняем изменения
+                cout << "Книга возвращена" << endl;
+                return;
+            }
+        }
+        cout << "Книга не найдена" << endl;
+    }
+    
+    // 6. Показать все книги в библиотеке
+    void showAllBooks() {
+        // Если вектор пустой, выводим сообщение
+        if (books.empty()) {
+            cout << "Библиотека пуста" << endl;
+            return;
+        }
+        // Выводим каждую книгу
+        for (auto& book : books) {
+            printBook(book);
+        }
+    }
+    
+    // Вспомогательный метод: вывод одной книги на экран
+    void printBook(Book& book) {
+        cout << "ID: " << book.id 
+             << " | " << book.title 
+             << " | " << book.author 
+             << " | " << book.year 
+             << " | " << book.status << endl;
+    }
+    
+    // Сохранение всех данных в файл
+    void saveToFile() {
+        ofstream file(filename);  // Открываем файл для записи (старое содержимое стирается)
+        
+        file << nextId << endl;          // Сохраняем следующий свободный ID
+        file << books.size() << endl;    // Сохраняем количество книг
+        
+        // Сохраняем каждую книгу в формате: id|title|author|year|status
+        for (auto& book : books) {
+            file << book.id << "|"
+                 << book.title << "|"
+                 << book.author << "|"
+                 << book.year << "|"
+                 << book.status << endl;
+        }
+        
+        file.close();  // Закрываем файл
+    }
+    
+    // Загрузка данных из файла
+    void loadFromFile() {
+        ifstream file(filename);          // Открываем файл для чтения
+        if (!file.is_open()) return;      // Если файла нет - просто выходим
+        
+        file >> nextId;                   // Читаем следующий ID
+        int count;                        // Количество сохранённых книг
+        file >> count;
+        file.ignore();                    // Пропускаем символ перевода строки
+        
+        // Загружаем каждую книгу
+        for (int i = 0; i < count; i++) {
+            Book book;
+            string line;
+            getline(file, line);          // Читаем строку с данными книги
+            
+            // Разбираем строку по разделителю '|'
+            size_t pos = 0;               // Позиция разделителя
+            int field = 0;                // Номер поля (0=id, 1=title, 2=author, 3=year, 4=status)
+            size_t start = 0;             // Начало текущего поля
+            
+            // Пока находим символ '|' в строке
+            while ((pos = line.find('|', start)) != string::npos) {
+                string token = line.substr(start, pos - start);  // Извлекаем поле
+                
+                // Заполняем соответствующее поле структуры
+                if (field == 0) book.id = stoi(token);           // ID (число)
+                else if (field == 1) book.title = token;         // Название
+                else if (field == 2) book.author = token;        // Автор
+                else if (field == 3) book.year = stoi(token);    // Год (число)
+                else if (field == 4) book.status = token;        // Статус
+                
+                start = pos + 1;  // Перемещаем начало на следующий символ
+                field++;          // Увеличиваем номер поля
+            }
+            
+            books.push_back(book);  // Добавляем загруженную книгу в вектор
+        }
+        
+        file.close();  // Закрываем файл
+    }
+};
+
+// Главная функция - точка входа в программу
+int main() {
+    setlocale(LC_ALL, "Russian"); 
+    Library lib;      // Создаём объект библиотеки
+    int choice, id;   // Переменные для выбора меню и ID
+    string query;     // Переменная для поискового запроса
+    
+    // Бесконечный цикл меню (выход при выборе 7)
+    while (true) {
+        // Вывод меню
+        cout << "\n=== Домашняя библиотека ===" << endl;
+        cout << "1. Добавить книгу" << endl;
+        cout << "2. Удалить книгу" << endl;
+        cout << "3. Найти книгу" << endl;
+        cout << "4. Выдать книгу" << endl;
+        cout << "5. Вернуть книгу" << endl;
+        cout << "6. Показать все книги" << endl;
+        cout << "7. Выход" << endl;
+        cout << "Выберите: ";
+        cin >> choice;  // Читаем выбор пользователя
+        
+        // Обработка выбора
+        switch(choice) {
+            case 1:
+                lib.addBook();        // Добавление книги
+                break;
+            case 2:
+                cout << "ID книги: ";
+                cin >> id;
+                lib.removeBook(id);   // Удаление книги
+                break;
+            case 3:
+                cout << "Поиск: ";
+                cin.ignore();         // Очищаем буфер перед getline
+                getline(cin, query);
+                lib.searchBooks(query); // Поиск книг
+                break;
+            case 4:
+                cout << "ID книги: ";
+                cin >> id;
+                lib.issueBook(id);    // Выдача книги
+                break;
+            case 5:
+                cout << "ID книги: ";
+                cin >> id;
+                lib.returnBook(id);   // Возврат книги
+                break;
+            case 6:
+                lib.showAllBooks();   // Показ всех книг
+                break;
+            case 7:
+                return 0;             // Выход из программы
+            default:
+                cout << "Неверный выбор" << endl;  // Если ввели не 1-7
+        }
+    }
+    
+    return 0;  // Эта строка не выполнится из-за бесконечного цикла, но нужна формально
+}

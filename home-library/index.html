@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Домашняя библиотека</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Домашняя библиотека</h1>
+            <p>Система учёта книг</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Форма добавления книги -->
+            <div class="card">
+                <h2>➕ Добавить новую книгу</h2>
+                <form id="addBookForm">
+                    <input type="text" id="title" placeholder="Название книги" required>
+                    <input type="text" id="author" placeholder="Автор" required>
+                    <input type="number" id="year" placeholder="Год издания" required>
+                    <button type="submit">Добавить книгу</button>
+                </form>
+            </div>
+
+            <!-- Поиск -->
+            <div class="card">
+                <h2>🔍 Поиск книг</h2>
+                <input type="text" id="searchInput" placeholder="Поиск по названию или автору...">
+            </div>
+
+            <!-- Фильтр по статусу -->
+            <div class="card">
+                <h2>📌 Фильтр по статусу</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">Все книги</button>
+                    <button class="filter-btn" data-filter="в наличии">В наличии</button>
+                    <button class="filter-btn" data-filter="выдана">Выданы</button>
+                </div>
+            </div>
+
+            <!-- Список книг -->
+            <div class="card">
+                <h2>📖 Список книг</h2>
+                <div id="booksList" class="books-list">
+                    <p class="empty-message">Нет книг. Добавьте первую книгу!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

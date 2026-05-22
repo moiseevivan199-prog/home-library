@@ -1,0 +1,210 @@
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <fstream>
+#include <algorithm>
+
+using namespace std;
+
+struct Book {
+    int id;
+    string title;
+    string author;
+    int year;
+    string status;
+};
+
+class Library {
+private:
+    vector<Book> books;
+    int nextId;
+    string filename;
+    
+public:
+    Library() : nextId(1), filename("library.txt") {
+        loadFromFile();
+    }
+    
+    void addBook() {
+        Book book;
+        book.id = nextId++;
+        
+        cout << "Название: ";
+        cin.ignore();
+        getline(cin, book.title);
+        
+        cout << "Автор: ";
+        getline(cin, book.author);
+        
+        cout << "Год: ";
+        cin >> book.year;
+        
+        book.status = "в наличии";
+        books.push_back(book);
+        saveToFile();
+        cout << "Книга добавлена. ID: " << book.id << endl;
+    }
+    
+    void removeBook(int id) {
+        for (size_t i = 0; i < books.size(); i++) {
+            if (books[i].id == id) {
+                books.erase(books.begin() + i);
+                saveToFile();
+                cout << "Книга удалена" << endl;
+                return;
+            }
+        }
+        cout << "Книга не найдена" << endl;
+    }
+    
+    void searchBooks(string query) {
+        for (auto& book : books) {
+            if (book.title.find(query) != string::npos || 
+                book.author.find(query) != string::npos) {
+                printBook(book);
+            }
+        }
+    }
+    
+    void issueBook(int id) {
+        for (auto& book : books) {
+            if (book.id == id) {
+                book.status = "выдана";
+                saveToFile();
+                cout << "Книга выдана" << endl;
+                return;
+            }
+        }
+        cout << "Книга не найдена" << endl;
+    }
+    
+    void returnBook(int id) {
+        for (auto& book : books) {
+            if (book.id == id) {
+                book.status = "в наличии";
+                saveToFile();
+                cout << "Книга возвращена" << endl;
+                return;
+            }
+        }
+        cout << "Книга не найдена" << endl;
+    }
+    
+    void showAllBooks() {
+        for (auto& book : books) {
+            printBook(book);
+        }
+    }
+    
+    void printBook(Book& book) {
+        cout << "ID: " << book.id 
+             << " | " << book.title 
+             << " | " << book.author 
+             << " | " << book.year 
+             << " | " << book.status << endl;
+    }
+    
+    void saveToFile() {
+        ofstream file(filename);
+        file << nextId << endl;
+        file << books.size() << endl;
+        for (auto& book : books) {
+            file << book.id << "|"
+                 << book.title << "|"
+                 << book.author << "|"
+                 << book.year << "|"
+                 << book.status << endl;
+        }
+        file.close();
+    }
+    
+    void loadFromFile() {
+        ifstream file(filename);
+        if (!file.is_open()) return;
+        
+        file >> nextId;
+        int count;
+        file >> count;
+        file.ignore();
+        
+        for (int i = 0; i < count; i++) {
+            Book book;
+            string line;
+            getline(file, line);
+            
+            size_t pos = 0;
+            int field = 0;
+            size_t start = 0;
+            
+            while ((pos = line.find('|', start)) != string::npos) {
+                string token = line.substr(start, pos - start);
+                if (field == 0) book.id = stoi(token);
+                else if (field == 1) book.title = token;
+                else if (field == 2) book.author = token;
+                else if (field == 3) book.year = stoi(token);
+                else if (field == 4) book.status = token;
+                start = pos + 1;
+                field++;
+            }
+            books.push_back(book);
+        }
+        file.close();
+    }
+};
+
+int main() {
+    setlocale(LC_ALL, "Russian"); 
+    Library lib;
+    int choice, id;
+    string query;
+    
+    while (true) {
+        cout << "\n=== Домашняя библиотека ===" << endl;
+        cout << "1. Добавить книгу" << endl;
+        cout << "2. Удалить книгу" << endl;
+        cout << "3. Найти книгу" << endl;
+        cout << "4. Выдать книгу" << endl;
+        cout << "5. Вернуть книгу" << endl;
+        cout << "6. Показать все книги" << endl;
+        cout << "7. Выход" << endl;
+        cout << "Выберите: ";
+        cin >> choice;
+        
+        switch(choice) {
+            case 1:
+                lib.addBook();
+                break;
+            case 2:
+                cout << "ID книги: ";
+                cin >> id;
+                lib.removeBook(id);
+                break;
+            case 3:
+                cout << "Поиск: ";
+                cin.ignore();
+                getline(cin, query);
+                lib.searchBooks(query);
+                break;
+            case 4:
+                cout << "ID книги: ";
+                cin >> id;
+                lib.issueBook(id);
+                break;
+            case 5:
+                cout << "ID книги: ";
+                cin >> id;
+                lib.returnBook(id);
+                break;
+            case 6:
+                lib.showAllBooks();
+                break;
+            case 7:
+                return 0;
+            default:
+                cout << "Неверный выбор" << endl;
+        }
+    }
+    
+    return 0;
+}
