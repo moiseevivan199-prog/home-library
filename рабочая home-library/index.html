@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Домашняя библиотека</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1>📚 Домашняя библиотека</h1>
+        <div class="stats">
+            <div class="stat">📖 Всего: <span id="totalCount">0</span></div>
+            <div class="stat">✅ В наличии: <span id="availableCount">0</span></div>
+            <div class="stat">📤 Выдано: <span id="issuedCount">0</span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>➕ Добавить книгу</h3>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+            <input type="text" id="title" placeholder="Название" style="flex: 2;">
+            <input type="text" id="author" placeholder="Автор" style="flex: 1;">
+            <input type="number" id="year" placeholder="Год" style="flex: 0.5;">
+            <button id="addBtn">Добавить</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>🔍 Поиск</h3>
+        <input type="text" id="searchInput" placeholder="Поиск по названию или автору" style="width: 100%; margin-bottom: 15px;">
+        
+        <h3>📌 Фильтр</h3>
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">Все</button>
+            <button class="filter-btn" data-filter="в наличии">В наличии</button>
+            <button class="filter-btn" data-filter="выдана">Выданы</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>📖 Список книг (<span id="bookCount">0</span>)</h3>
+        <div id="booksList" class="books-list">
+            <div class="empty-state">📭 Нет книг. Добавьте первую!</div>
+        </div>
+    </div>
+
+    <footer>Данные сохраняются в браузере. Работает без наебок.</footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
